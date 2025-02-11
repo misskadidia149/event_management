@@ -1,0 +1,1 @@
+<!-- details d'un evenement -->
