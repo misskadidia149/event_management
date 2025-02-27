@@ -1,13 +1,14 @@
 <!-- Page de connexion -->
 <?php
-session_start();
 require_once "../config/db.php";
+session_start();
+
 $message = "";
 
 if (isset($_POST['login'])) {
     $email = trim($_POST['email']);
     $password = trim($_POST['mdp']);
-
+    
     if (!empty($email) && !empty($password)) {
         $verifyUser = $pdo->prepare("SELECT * FROM users WHERE email = ?");
         $verifyUser->execute([$email]);
@@ -16,8 +17,17 @@ if (isset($_POST['login'])) {
         if ($user && password_verify($password, $user['mot_de_passe'])) {
             $_SESSION['user_id'] = $user['id']; // Stocke l'ID de l'utilisateur en session
             $_SESSION['email'] = $user['email'];
-            header("Location: index.php"); // Redirige après connexion
+            $_SESSION['role'] = $user['role'];
+
+            if ($user['role'] === 'admin') {
+                header("Location: admin_dashboard.php");
+                exit(); // Vérifier si ce message s'affiche avant la redirection
+            } else {
+                header("Location: user_dashboard.php");
+                exit(); // Vérifier si ce message s'affiche avant la redirection
+            }
             exit();
+            
         } else {
             $message = "<div class='alert alert-danger text-center'>Mauvais identifiants !</div>";
         }

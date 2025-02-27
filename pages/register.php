@@ -25,7 +25,7 @@ if (isset($_POST['register'])) {
 
         if ($checkUser->rowCount() > 0) {
 
-            echo "<div class='alert alert-danger text-center>Cet emailest déjà utilisé!</div>";
+            echo "<div class='alert alert-danger text-center>Cet email est déjà utilisé!</div>";
         } else {
 
             //hasher le password
