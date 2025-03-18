@@ -2,13 +2,15 @@
 session_start();
 require_once "../config/db.php";
 
+// Vérifier si l'utilisateur est connecté
 if (!isset($_SESSION['user_id'])) {
     die("Vous devez être connecté pour voir vos événements.");
 }
 
 $user_id = $_SESSION['user_id'];
 
-$sql = "SELECT e.* FROM events e 
+// Récupérer les événements auxquels l'utilisateur est inscrit
+$sql = "SELECT e.titre, e.lieu, e.date_debut FROM events e 
         JOIN register r ON e.id = r.evenement_id 
         WHERE r.utilisateur_id = ?";
 $stmt = $pdo->prepare($sql);
@@ -34,8 +36,8 @@ $evenements = $stmt->fetchAll();
             <?php foreach ($evenements as $event) : ?>
                 <div class="col-md-4">
                     <div class="card event-card p-3">
-                        <h5 class="card-title"><?= htmlspecialchars($event['nom']) ?></h5>
-                        <p class="text-muted">📍 <?= htmlspecialchars($event['lieu']) ?> | 📅 <?= htmlspecialchars($event['date_event']) ?></p>
+                        <h5 class="card-title"><?= htmlspecialchars($event['titre']) ?></h5>
+                        <p class="text-muted">📍 <?= htmlspecialchars($event['lieu']) ?> | 📅 <?= htmlspecialchars($event['date_debut']) ?></p>
                     </div>
                 </div>
             <?php endforeach; ?>
