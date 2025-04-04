@@ -1,4 +1,3 @@
-
 <?php
 session_start();
 require_once "../config/db.php";
@@ -15,9 +14,9 @@ $events = $result->fetchAll(PDO::FETCH_ASSOC);
   <link rel="apple-touch-icon" sizes="76x76" href="../assets/img/apple-icon.png">
   <link rel="icon" type="image/png" href="../assets/img/favicon.png">
   <title>
-    Gestion Evenements
+    Gestion Utilisateurs
   </title>
-  <!--     Fonts and icons     -->
+  <!-- Fonts and icons -->
   <link rel="stylesheet" type="text/css" href="https://fonts.googleapis.com/css?family=Inter:300,400,500,600,700,900" />
   <!-- Nucleo Icons -->
   <link href="../assets/css/nucleo-icons.css" rel="stylesheet" />
@@ -28,10 +27,11 @@ $events = $result->fetchAll(PDO::FETCH_ASSOC);
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,0,0" />
   <!-- CSS Files -->
   <link id="pagestyle" href="../assets/css/material-dashboard.css?v=3.2.0" rel="stylesheet" />
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+  <!-- Bootstrap CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
 </head>
 
-<body class="g-sidenav-show  bg-gray-100">
+<body class="g-sidenav-show bg-gray-100">
 <?php include '../includes/sidebar.php'; ?>
   <main class="main-content position-relative max-height-vh-100 h-100 border-radius-lg ">
   <?php include '../includes/navbar.php'; ?>
@@ -53,10 +53,7 @@ $events = $result->fetchAll(PDO::FETCH_ASSOC);
                       <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Nom</th>
                       <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Email</th>
                       <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Date d'inscription</th>
-         
-
-
-                      <th class="text-secondary opacity-7"></th>
+                      <th class="text-secondary opacity-7">Actions</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -67,11 +64,10 @@ $events = $result->fetchAll(PDO::FETCH_ASSOC);
       <td>" . htmlspecialchars($row['email']) . "</td>
       <td>" . htmlspecialchars($row['date_inscription']) . "</td>
       <td>
-          <a href='actions/edit/edit_event.php?id=" . $row['id'] . "'>Modifier</a> | 
-          <a href='actions/delete/delete_event.php?id=" . $row['id'] . "' onclick='return confirm(\"Supprimer cet événement ?\")'>Supprimer</a>
+          <a href='actions/edit/edit_event.php?id=" . $row['id'] . "' class='btn btn-sm btn-outline-primary'>Modifier</a>
+          <a href='actions/delete/delete_event.php?id=" . $row['id'] . "' onclick='return confirm(\"Supprimer cet utilisateur ?\")' class='btn btn-sm btn-outline-danger'>Supprimer</a>
       </td>
   </tr>";
-
               } ?>
                   </tbody>
                 </table>
@@ -81,33 +77,58 @@ $events = $result->fetchAll(PDO::FETCH_ASSOC);
         </div>
       </div>
   </main>
+
+  <!-- Bouton flottant pour ajouter un utilisateur -->
   <div class="fixed-plugin">
-<!-- Bouton pour afficher le modal -->
-<button class="btn btn-primary position-fixed bottom-0 end-0 m-4" data-bs-toggle="modal" data-bs-target="#addEventModal">
-    <i class="material-symbols-rounded">add</i> Ajouter un Événement
-</button>
-<!-- Modal pour ajouter un événement -->
-<div class="modal fade" id="addEventModal" tabindex="-1" aria-labelledby="addEventModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
+    <button class="btn btn-primary btn-round position-fixed bottom-0 end-0 m-4" data-bs-toggle="modal" data-bs-target="#addUserModal">
+        <i class="material-symbols-rounded">add</i> Ajouter un Utilisateur
+    </button>
+  </div>
+
+  <!-- Modal pour ajouter un utilisateur -->
+  <div class="modal fade" id="addUserModal" tabindex="-1" aria-labelledby="addUserModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="addEventModalLabel">Ajouter un Événement</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            <div class="modal-header bg-gradient-dark">
+                <h5 class="modal-title text-white" id="addUserModalLabel">Ajouter un Utilisateur</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
-                <?php include 'actions/add/addUser.php'; ?> <!-- Inclusion du formulaire -->
+                <form action="actions/add/addUser.php" method="POST">
+                    <div class="mb-3">
+                        <label for="nom" class="form-label">Nom complet</label>
+                        <input type="text" class="form-control" id="nom" name="nom" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="email" class="form-label">Email</label>
+                        <input type="email" class="form-control" id="email" name="email" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="role" class="form-label">Rôle</label>
+                        <select class="form-select" id="role" name="role" required>
+                            <option value="">Sélectionner un rôle</option>
+                            <option value="admin">Administrateur</option>
+                            <option value="user">Utilisateur</option>
+                        </select>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
+                        <button type="submit" name="submit" class="btn btn-primary">Ajouter</button>
+                    </div>
+                </form>
             </div>
         </div>
     </div>
-</div>
-
- 
   </div>
-  <!--   Core JS Files   -->
+
+  <!-- Core JS Files -->
   <script src="../assets/js/core/popper.min.js"></script>
   <script src="../assets/js/core/bootstrap.min.js"></script>
   <script src="../assets/js/plugins/perfect-scrollbar.min.js"></script>
   <script src="../assets/js/plugins/smooth-scrollbar.min.js"></script>
+  <!-- Bootstrap Bundle JS -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  
   <script>
     var win = navigator.platform.indexOf('Win') > -1;
     if (win && document.querySelector('#sidenav-scrollbar')) {
@@ -117,13 +138,10 @@ $events = $result->fetchAll(PDO::FETCH_ASSOC);
       Scrollbar.init(document.querySelector('#sidenav-scrollbar'), options);
     }
   </script>
+  
   <!-- Github buttons -->
   <script async defer src="https://buttons.github.io/buttons.js"></script>
-  <!-- Control Center for Material Dashboard: parallax effects, scripts for the example pages etc -->
+  <!-- Control Center for Material Dashboard -->
   <script src="../assets/js/material-dashboard.min.js?v=3.2.0"></script>
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-
 </body>
-
 </html>
