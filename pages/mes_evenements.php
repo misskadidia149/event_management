@@ -10,7 +10,7 @@ if (!isset($_SESSION['user_id'])) {
 $user_id = $_SESSION['user_id'];
 
 // Récupérer les événements auxquels l'utilisateur est inscrit
-$sql = "SELECT e.titre, e.lieu, e.date_debut FROM events e 
+$sql = "SELECT e.id, e.titre, e.lieu, e.date_debut FROM events e 
         JOIN register r ON e.id = r.evenement_id 
         WHERE r.utilisateur_id = ?";
 $stmt = $pdo->prepare($sql);
@@ -29,20 +29,27 @@ $evenements = $stmt->fetchAll();
 
 <div class="container mt-5">
     <h2 class="text-center mb-4">📅 Mes Événements</h2>
-    <?php if (empty($evenements)) : ?>
-        <p class="text-center">Vous n'êtes inscrit à aucun événement.</p>
-    <?php else : ?>
-        <div class="row">
-            <?php foreach ($evenements as $event) : ?>
-                <div class="col-md-4">
-                    <div class="card event-card p-3">
-                        <h5 class="card-title"><?= htmlspecialchars($event['titre']) ?></h5>
-                        <p class="text-muted">📍 <?= htmlspecialchars($event['lieu']) ?> | 📅 <?= htmlspecialchars($event['date_debut']) ?></p>
+
+    <form action="telecharger_pdf.php" method="post">
+        <?php if (empty($evenements)) : ?>
+            <p class="text-center">Vous n'êtes inscrit à aucun événement.</p>
+        <?php else : ?>
+            <div class="row">
+                <?php foreach ($evenements as $event) : ?>
+                    <div class="col-md-4">
+                        <div class="card event-card p-3">
+                            <input type="checkbox" name="events[]" value="<?= htmlspecialchars($event['titre']) . '|' . htmlspecialchars($event['lieu']) . '|' . htmlspecialchars($event['date_debut']) ?>">
+                            <h5 class="card-title"><?= htmlspecialchars($event['titre']) ?></h5>
+                            <p class="text-muted">📍 <?= htmlspecialchars($event['lieu']) ?> | 📅 <?= htmlspecialchars($event['date_debut']) ?></p>
+                        </div>
                     </div>
-                </div>
-            <?php endforeach; ?>
-        </div>
-    <?php endif; ?>
+                <?php endforeach; ?>
+            </div>
+            <div class="text-center mt-4">
+                <button type="submit" class="btn btn-primary">📥 Télécharger en PDF</button>
+            </div>
+        <?php endif; ?>
+    </form>
 </div>
 
 </body>

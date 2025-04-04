@@ -63,7 +63,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit'])) {
         ]);
 
         $_SESSION['success'] = "Événement ajouté avec succès";
-        header("Location: ../admin_dashboard.php");
+        // header("Location: ../tableEvent.php");
         exit();
 
     } catch (Exception $e) {

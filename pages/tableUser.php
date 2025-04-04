@@ -3,7 +3,7 @@ session_start();
 require_once "../config/db.php";
 $sql = "SELECT * FROM users ORDER BY debut DESC";
 $result = $pdo->query("SELECT * FROM users");
-$events = $result->fetchAll(PDO::FETCH_ASSOC);
+$users = $result->fetchAll(PDO::FETCH_ASSOC);
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -57,18 +57,28 @@ $events = $result->fetchAll(PDO::FETCH_ASSOC);
                     </tr>
                   </thead>
                   <tbody>
-                  <?php foreach ($events as $row) {
-                  echo "<tr>
-      <td>" . htmlspecialchars($row['id']) . "</td>
-      <td>" . htmlspecialchars($row['nom']) . "</td>
-      <td>" . htmlspecialchars($row['email']) . "</td>
-      <td>" . htmlspecialchars($row['date_inscription']) . "</td>
+                  <?php foreach ($users as $row): ?>
+              <tr>
+      <td><?=htmlspecialchars($row['id']) ?></td>
+
+
+      <td><?= htmlspecialchars($row['nom'])  ?></td>
+      <td><?= htmlspecialchars($row['email']) ?></td>
+      <td><?=htmlspecialchars($row['date_inscription']) ?></td>
       <td>
-          <a href='actions/edit/edit_event.php?id=" . $row['id'] . "' class='btn btn-sm btn-outline-primary'>Modifier</a>
-          <a href='actions/delete/delete_event.php?id=" . $row['id'] . "' onclick='return confirm(\"Supprimer cet utilisateur ?\")' class='btn btn-sm btn-outline-danger'>Supprimer</a>
-      </td>
-  </tr>";
-              } ?>
+    <a href='actions/edit/edit_event.php?id=<?= $row['id'] ?>' class='btn btn-sm btn-outline-primary'>Modifier</a>
+    <button class='btn btn-sm btn-outline-danger delete-btn' 
+        data-user-id='<?= $row['id'] ?>'
+        data-delete-url='<?= htmlspecialchars('deleteUser.php') ?>'>
+    Supprimer
+</button>
+
+<a href='actions/edit/edit_event.php?id=<?= $row['id'] ?>' class='btn btn-sm btn-outline-primary'>Modifier</a>
+
+</td>
+
+  </tr>
+              <?php endforeach ;?>
                   </tbody>
                 </table>
               </div>
@@ -138,6 +148,54 @@ $events = $result->fetchAll(PDO::FETCH_ASSOC);
       Scrollbar.init(document.querySelector('#sidenav-scrollbar'), options);
     }
   </script>
+  <!-- jQuery -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    document.querySelectorAll('.delete-btn').forEach(btn => {
+        btn.addEventListener('click', async function() {
+            const userId = this.dataset.userId;
+            const deleteUrl = this.dataset.deleteUrl;
+            
+            if (!confirm('Êtes-vous sûr de vouloir supprimer cet utilisateur ?')) {
+                return;
+            }
+
+            try {
+                const response = await fetch(deleteUrl, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                    body: `id=${userId}`
+                });
+
+                if (!response.ok) {
+                    throw new Error(`Erreur HTTP: ${response.status}`);
+                }
+
+                const data = await response.json();
+                
+                if (data.success) {
+                    // Suppression visuelle de la ligne
+                    this.closest('tr').remove();
+                    showToast('success', 'Suppression réussie');
+                } else {
+                    throw new Error(data.error || 'Erreur lors de la suppression');
+                }
+            } catch (error) {
+                console.error('Erreur:', error);
+                showToast('danger', `Échec de la suppression: ${error.message}`);
+            }
+        });
+    });
+
+    function showToast(type, message) {
+        // Votre implémentation existante...
+    }
+});
+</script>
+
   
   <!-- Github buttons -->
   <script async defer src="https://buttons.github.io/buttons.js"></script>
