@@ -1,5 +1,5 @@
 <?php
-require_once __DIR__ . "/../../config/db.php";
+require_once __DIR__ . "/../../../config/db.php";
 // session_start();
 
 if (isset($_POST['submit'])) {
@@ -23,7 +23,7 @@ if (isset($_POST['submit'])) {
         }
 
         $new_image_name = uniqid("event_", true) . "." . $image_ext;
-        $upload_dir = "../../uploads/"; // Assure-toi que ce dossier existe !
+        $upload_dir = __DIR__ . "/../../../uploads/";
         $upload_path = $upload_dir . $new_image_name;
 
         if (move_uploaded_file($image_tmp, $upload_path)) {
