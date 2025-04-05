@@ -2,6 +2,7 @@
 // Inclure la connexion à la base de données
 require_once "../config/db.php";
 
+
 session_start();
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['event_id'])) {

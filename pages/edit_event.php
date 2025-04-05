@@ -1,5 +1,5 @@
 <?php
-require_once __DIR__ . "/../../../config/db.php";
+require_once "../config/db.php";
 session_start();
 
 // Vérifier si l'ID de l'événement est présent dans l'URL
@@ -55,7 +55,8 @@ if (isset($_POST['submit'])) {
     $sql = "UPDATE events SET titre = ?, description = ?, date_debut = ?, date_fin = ?, lieu = ?, image = ?, organisateur_id = ? WHERE id = ?";
     $stmt = $pdo->prepare($sql);
     if ($stmt->execute([$titre, $description, $debut, $fin, $lieu, $new_image_name, $organisateur, $event_id])) {
-        header("Location: ../admin_dashboard.php");
+        // Rediriger vers la page de l'événement ou une autre page après la mise à jour
+        header("Location: event_details.php?id=" . $event_id);
         exit();
     } else {
         echo "Erreur lors de la mise à jour.";
@@ -71,18 +72,6 @@ if (isset($_POST['submit'])) {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Modifier un événement</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <style>
-        body {
-            background-image: linear-gradient(rgba(0, 0, 255, 0.5), rgba(255, 255, 0, 0.5)),
-                url("../../assets/img/nezuko.jpg");
-            background-size: cover;
-            background-position: center;
-            background-repeat: no-repeat;
-            height: 100vh;
-            margin: 0;
-            padding: 0;
-        }
-    </style>
 </head>
 
 <body>
@@ -107,12 +96,14 @@ if (isset($_POST['submit'])) {
 
             <div class="mb-3">
                 <label for="date_debut" class="form-label">Date de début</label>
-                <input type="date" name="date_debut" class="form-control" value="<?= $event['date_debut'] ?>" required>
+                <!-- Assurez-vous que la date est au format YYYY-MM-DD -->
+                <input type="date" name="date_debut" class="form-control" value="<?= date('Y-m-d', strtotime($event['date_debut'])) ?>" required>
             </div>
 
             <div class="mb-3">
                 <label for="date_fin" class="form-label">Date de fin</label>
-                <input type="date" name="date_fin" class="form-control" value="<?= $event['date_fin'] ?>" required>
+                <!-- Assurez-vous que la date est au format YYYY-MM-DD -->
+                <input type="date" name="date_fin" class="form-control" value="<?= date('Y-m-d', strtotime($event['date_fin'])) ?>" required>
             </div>
 
             <div class="mb-3">

@@ -106,7 +106,19 @@ $events = $result->fetchAll(PDO::FETCH_ASSOC);
                         ?>
                       </td>
                       <td class="text-center">
-    <a href="edit_event.php?id=<?= $row['id'] ?>" class="btn btn-sm btn-outline-primary">Modifier</a>
+                      <a href="#" class="btn btn-sm btn-outline-primary" 
+   data-bs-toggle="modal" 
+   data-bs-target="#editEventModal" 
+   data-id="<?= $row['id'] ?>"
+   data-titre="<?= htmlspecialchars($row['titre']) ?>"
+   data-description="<?= htmlspecialchars($row['description']) ?>"
+   data-date="<?= $row['date_debut'] ?>"
+   data-datefin="<?= $row['date_fin'] ?>"
+   data-lieu="<?= $row['lieu'] ?>"
+   data-image="<?= $row['image'] ?>">
+   Modifier
+</a>
+
     
     <!-- Formulaire de suppression -->
     <form action="delete_event.php" method="POST" style="display:inline;" onsubmit="return confirm('Supprimer cet événement ?');">
@@ -219,6 +231,53 @@ $events = $result->fetchAll(PDO::FETCH_ASSOC);
     </div>
   </div>
 </div>
+<!-- Modal pour modifier un événement -->
+<div class="modal fade" id="editEventModal" tabindex="-1" aria-labelledby="editEventModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header bg-gradient-dark">
+        <h5 class="modal-title text-white" id="editEventModalLabel">Modifier un événement</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <form action="edit_event.php" method="POST" id="editEventForm">
+          <input type="hidden" id="event_id" name="event_id">
+          <div class="mb-3">
+            <label for="editTitre" class="form-label">Titre</label>
+            <input type="text" class="form-control" id="editTitre" name="titre" required>
+          </div>
+          <div class="mb-3">
+            <label for="editDescription" class="form-label">Description</label>
+            <input type="text" class="form-control" id="editDescription" name="description" required>
+          </div>
+          <div class="mb-3">
+            <label for="editDateDebut" class="form-label">Date début</label>
+            <input type="date" class="form-control" id="editDateDebut" name="date_debut" required>
+          </div>
+          <div class="mb-3">
+            <label for="editDateFin" class="form-label">Date de fin</label>
+            <input type="date" class="form-control" id="editDateFin" name="date_fin" required>
+          </div>
+          <div class="mb-3">
+            <label for="editLieu" class="form-label">Lieu</label>
+            <input type="text" class="form-control" id="editLieu" name="lieu" required>
+          </div>
+          <div class="mb-3">
+            <label for="editImage" class="form-label">Image</label>
+            <input type="file" class="form-control" id="editImage" name="image">
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
+            <button type="submit" class="btn btn-primary">Modifier</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+
 <script>
 document.addEventListener('DOMContentLoaded', function () {
   var eventDetailModal = document.getElementById('eventDetailModal');
@@ -250,6 +309,38 @@ document.addEventListener('DOMContentLoaded', function () {
     }
   });
 });
+
+document.addEventListener('DOMContentLoaded', function () {
+  // Modal d'édition d'événement
+  var editEventModal = document.getElementById('editEventModal');
+
+  editEventModal.addEventListener('show.bs.modal', function (event) {
+    var button = event.relatedTarget; // Le bouton qui a ouvert le modal
+
+    // Récupérer les données des attributs 'data-' du bouton
+    var eventId = button.getAttribute('data-id');
+    var titre = button.getAttribute('data-titre');
+    var description = button.getAttribute('data-description');
+    var dateDebut = button.getAttribute('data-date');
+    var dateFin = button.getAttribute('data-datefin');
+    var lieu = button.getAttribute('data-lieu');
+    var image = button.getAttribute('data-image');
+
+    // Pré-remplir les champs du modal
+    document.getElementById('event_id').value = eventId;
+    document.getElementById('editTitre').value = titre;
+    document.getElementById('editDescription').value = description;
+    document.getElementById('editDateDebut').value = dateDebut;
+    document.getElementById('editDateFin').value = dateFin;
+    document.getElementById('editLieu').value = lieu;
+    // Optionnel: Ajouter l'image si nécessaire
+    if (image) {
+      // Vous pouvez afficher l'image actuelle ici si vous voulez
+      // document.getElementById('editImage').src = "path_to_image";
+    }
+  });
+});
+
 </script>
 
   <!-- Core JS Files -->
