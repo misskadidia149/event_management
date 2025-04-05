@@ -1,55 +1,32 @@
 <?php
-require_once __DIR__ . "/../../../config/db.php";
+// Connexion à la base de données
+require_once "../config/db.php";
 session_start();
+// Inclure la connexion à la base de données
 
-// Debug: Enregistrer la tentative de suppression
-error_log("Tentative de suppression - Méthode: " . $_SERVER['REQUEST_METHOD'] . ", ID: " . ($_POST['id'] ?? 'non défini'));
 
-header('Content-Type: application/json');
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['id'])) {
+    // Récupérer l'id de l'utilisateur à supprimer
+    $id = intval($_POST['id']);
 
-try {
-    // Vérification de la méthode
-    if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-        throw new Exception('Méthode non autorisée', 405);
+    // Requête SQL pour supprimer l'utilisateur
+    $sql = "DELETE FROM users WHERE id = :id";
+    
+    // Préparer la requête
+    $stmt = $pdo->prepare($sql);
+    
+    // Lier l'ID à la requête
+    $stmt->bindParam(':id', $id, PDO::PARAM_INT);
+
+    // Exécuter la requête
+    if ($stmt->execute()) {
+        // Si la suppression réussie, rediriger
+        header("Location: tableUser.php?deleted=success");
+        exit();
+    } else {
+        echo "Erreur lors de la suppression : " . $pdo->errorInfo()[2];
     }
-
-    // Vérification de l'ID
-    if (!isset($_POST['id'])) {
-        throw new Exception('ID manquant', 400);
-    }
-
-    $userId = filter_input(INPUT_POST, 'id', FILTER_VALIDATE_INT);
-    if ($userId === false || $userId <= 0) {
-        throw new Exception('ID invalide', 400);
-    }
-
-    // Vérification de l'existence
-    $stmt = $pdo->prepare("SELECT id FROM users WHERE id = ?");
-    $stmt->execute([$userId]);
-    if (!$stmt->fetch()) {
-        throw new Exception('Utilisateur non trouvé', 404);
-    }
-
-    // Suppression
-    $stmt = $pdo->prepare("DELETE FROM users WHERE id = ?");
-    $stmt->execute([$userId]);
-
-    if ($stmt->rowCount() === 0) {
-        throw new Exception('Aucun utilisateur supprimé', 500);
-    }
-
-    // Réponse succès
-    echo json_encode([
-        'success' => true,
-        'message' => 'Utilisateur supprimé avec succès'
-    ]);
-
-} catch (Exception $e) {
-    http_response_code($e->getCode() ?: 500);
-    echo json_encode([
-        'success' => false,
-        'error' => $e->getMessage(),
-        'code' => $e->getCode()
-    ]);
-    error_log("Erreur suppression: " . $e->getMessage());
+} else {
+    echo "Requête invalide.";
 }
+

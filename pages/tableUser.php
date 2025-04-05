@@ -1,8 +1,8 @@
 <?php
 session_start();
 require_once "../config/db.php";
-$sql = "SELECT * FROM users ORDER BY debut DESC";
-$result = $pdo->query("SELECT * FROM users");
+$sql = "SELECT * FROM users ORDER BY date_inscription DESC";
+$result = $pdo->query($sql);
 $users = $result->fetchAll(PDO::FETCH_ASSOC);
 ?>
 <!DOCTYPE html>
@@ -40,7 +40,7 @@ $users = $result->fetchAll(PDO::FETCH_ASSOC);
         <div class="col-12">
           <div class="card my-4">
             <div class="card-header p-0 position-relative mt-n4 mx-3 z-index-2">
-              <div class="bg-gradient-dark shadow-dark border-radius-lg pt-4 pb-3">
+              <div class=" shadow-dark border-radius-lg pt-4 pb-3" style="background-color: #9B2335;">
                 <h6 class="text-white text-capitalize ps-3">Gestion des Utilisateurs</h6>
               </div>
             </div>
@@ -66,14 +66,28 @@ $users = $result->fetchAll(PDO::FETCH_ASSOC);
       <td><?= htmlspecialchars($row['email']) ?></td>
       <td><?=htmlspecialchars($row['date_inscription']) ?></td>
       <td>
-    <a href='actions/edit/edit_event.php?id=<?= $row['id'] ?>' class='btn btn-sm btn-outline-primary'>Modifier</a>
-    <button class='btn btn-sm btn-outline-danger delete-btn' 
-        data-user-id='<?= $row['id'] ?>'
-        data-delete-url='<?= htmlspecialchars('deleteUser.php') ?>'>
-    Supprimer
-</button>
+      
+      <td>
+  <a href='actions/edit/edit_event.php?id=<?= $row['id'] ?>' class='btn btn-sm btn-outline-primary'>Modifier</a>
+  <form action="deleteUser.php" method="POST" style="display:inline;" onsubmit="return confirm('Supprimer cet événement ?');">
+    <input type="hidden" name="id" value="<?= $row['id'] ?>">
+    <button type="submit" class="btn btn-sm btn-outline-danger">Supprimer</button>
+</form>
 
-<a href='actions/edit/edit_event.php?id=<?= $row['id'] ?>' class='btn btn-sm btn-outline-primary'>Modifier</a>
+
+  <button 
+    class="btn btn-sm btn-outline-info view-details-btn" 
+    data-bs-toggle="modal" 
+    data-bs-target="#userDetailsModal"
+    data-id="<?= $row['id'] ?>"
+    data-nom="<?= htmlspecialchars($row['nom']) ?>"
+    data-email="<?= htmlspecialchars($row['email']) ?>"
+    data-date="<?= htmlspecialchars($row['date_inscription']) ?>"
+    data-role="<?= htmlspecialchars($row['role']) ?>"
+  >
+    Détails
+  </button>
+</td>
 
 </td>
 
@@ -130,6 +144,40 @@ $users = $result->fetchAll(PDO::FETCH_ASSOC);
         </div>
     </div>
   </div>
+<!-- Modal Détails Utilisateur -->
+<div class="modal fade" id="userDetailsModal" tabindex="-1" aria-labelledby="userDetailsModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header bg-gradient-info text-white">
+        <h5 class="modal-title" id="userDetailsModalLabel">Détails de l'utilisateur</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Fermer"></button>
+      </div>
+      <div class="modal-body">
+        <p><strong>ID :</strong> <span id="detail-id"></span></p>
+        <p><strong>Nom :</strong> <span id="detail-nom"></span></p>
+        <p><strong>Email :</strong> <span id="detail-email"></span></p>
+        <p><strong>Rôle :</strong> <span id="detail-role"></span></p>
+        <p><strong>Date d'inscription :</strong> <span id="detail-date"></span></p>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  // Gérer l’ouverture du modal et remplir les infos
+  document.querySelectorAll('.view-details-btn').forEach(button => {
+    button.addEventListener('click', () => {
+      document.getElementById('detail-id').textContent = button.dataset.id;
+      document.getElementById('detail-nom').textContent = button.dataset.nom;
+      document.getElementById('detail-email').textContent = button.dataset.email;
+      document.getElementById('detail-date').textContent = button.dataset.date;
+      document.getElementById('detail-role').textContent = button.dataset.role || "Non spécifié";
+    });
+  });
+</script>
 
   <!-- Core JS Files -->
   <script src="../assets/js/core/popper.min.js"></script>
@@ -189,11 +237,28 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
     });
-
+    <div id="toast-container" class="position-fixed bottom-0 end-0 p-3" style="z-index: 9999;"></div>
+    // Fonction pour afficher le toast
     function showToast(type, message) {
         // Votre implémentation existante...
+        const toast = document.createElement('div');
+  toast.className = `toast align-items-center text-white bg-${type} border-0 show`;
+  toast.role = 'alert';
+  toast.ariaLive = 'assertive';
+  toast.ariaAtomic = 'true';
+  toast.innerHTML = `
+    <div class="d-flex">
+      <div class="toast-body">${message}</div>
+      <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+    </div>
+  `;
+  document.getElementById('toast-container').appendChild(toast);
+  setTimeout(() => {
+    toast.remove();
+  }, 3000);
+}
     }
-});
+);
 </script>
 
   

@@ -2,6 +2,7 @@
 session_start();
 require_once "../config/db.php";
 
+// Correction de la requête SQL (cohérence entre la requête déclarée et exécutée)
 $result = $pdo->query("SELECT * FROM events ORDER BY date_debut DESC");
 $events = $result->fetchAll(PDO::FETCH_ASSOC);
 ?>
@@ -22,7 +23,8 @@ $events = $result->fetchAll(PDO::FETCH_ASSOC);
   <!-- Font Awesome Icons -->
   <script src="https://kit.fontawesome.com/42d5adcbca.js" crossorigin="anonymous"></script>
   <!-- Material Icons -->
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,0,0" />
+  <link rel="stylesheet"
+    href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,0,0" />
   <!-- CSS Files -->
   <link id="pagestyle" href="../assets/css/material-dashboard.css?v=3.2.0" rel="stylesheet" />
   <!-- Bootstrap CSS -->
@@ -38,7 +40,7 @@ $events = $result->fetchAll(PDO::FETCH_ASSOC);
       <div class="col-12">
         <div class="card my-4">
           <div class="card-header p-0 position-relative mt-n4 mx-3 z-index-2">
-            <div class="bg-gradient-dark shadow-dark border-radius-lg pt-4 pb-3">
+            <div class="shadow-dark border-radius-lg pt-4 pb-3" style="background-color: #0F4C81;">
               <h6 class="text-white text-capitalize ps-3">Gestion des Événements</h6>
             </div>
           </div>
@@ -48,13 +50,19 @@ $events = $result->fetchAll(PDO::FETCH_ASSOC);
                 <thead>
                   <tr>
                     <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Titre</th>
-                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Description</th>
-                    <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Début</th>
+                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Description
+                    </th>
+                    <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Début
+                    </th>
                     <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Fin</th>
-                    <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Lieu</th>
-                    <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Image</th>
-                    <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Organisateur</th>
-                    <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Actions</th>
+                    <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Lieu
+                    </th>
+                    <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Image
+                    </th>
+                    <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">
+                      Organisateur</th>
+                    <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Actions
+                    </th>
                   </tr>
                 </thead>
                 <tbody>
@@ -66,17 +74,31 @@ $events = $result->fetchAll(PDO::FETCH_ASSOC);
                       <td class="text-center text-sm"><?= htmlspecialchars($row['date_fin']) ?></td>
                       <td class="text-center text-sm"><?= htmlspecialchars($row['lieu']) ?></td>
                       <td class="text-center">
-                        <?php 
-                        $imagePath = "../../uploads/" . htmlspecialchars($row['image']);
-                        if (!empty($row['image']) && file_exists(__DIR__ . "/../../uploads/" . $row['image'])): 
-                        ?>
-                          <img src="<?= $imagePath ?>" width="50" height="50" class="rounded" style="object-fit: cover;" alt="Image événement">
-                        <?php else: ?>
-                          <span class="badge bg-secondary">Aucune image</span>
-                        <?php endif; ?>
-                      </td>
+                      <td class="text-center">
+    <?php 
+    // Chemin relatif pour l'affichage HTML (depuis tableEvent.php)
+    $imageRelativePath = "../../uploads/" . htmlspecialchars($row['image']);
+    
+    // Chemin absolu pour la vérification PHP
+    $imageAbsolutePath = __DIR__ . "/../../uploads/" . $row['image'];
+    
+    // Debug: Afficher les chemins pour vérification (à supprimer après test)
+    echo "<!-- Debug: " . $imageAbsolutePath . " -->";
+    
+    if (!empty($row['image']) && file_exists($imageAbsolutePath)): 
+    ?>
+        <img src="<?= $imageRelativePath ?>" width="50" height="50" class="rounded" 
+             style="object-fit: cover;" alt="Image événement">
+    <?php else: ?>
+        <span class="badge bg-secondary">Aucune image</span>
+        <?php if (!empty($row['image'])): ?>
+            <small class="text-danger d-block">(Fichier manquant: <?= htmlspecialchars($row['image']) ?>)</small>
+        <?php endif; ?>
+    <?php endif; ?>
+</td>
                       <td class="text-center text-sm">
                         <?php
+                        // Récupération du nom de l'organisateur
                         $org_stmt = $pdo->prepare("SELECT nom FROM users WHERE id = ?");
                         $org_stmt->execute([$row['organisateur_id']]);
                         $organisateur = $org_stmt->fetchColumn();
@@ -84,12 +106,26 @@ $events = $result->fetchAll(PDO::FETCH_ASSOC);
                         ?>
                       </td>
                       <td class="text-center">
-                        <a href="edit_event.php?id=<?= $row['id'] ?>" class="btn btn-sm btn-outline-primary">Modifier</a>
-                        <button class="btn btn-sm btn-outline-danger delete-btn" data-event-id="<?= $row['id'] ?>">Supprimer</button>
-                        <button class="btn btn-sm btn-info view-btn" data-event-id="<?= $row['id'] ?>">
-                          <i class="fas fa-eye"></i> Détails
-                        </button>
-                      </td>
+    <a href="edit_event.php?id=<?= $row['id'] ?>" class="btn btn-sm btn-outline-primary">Modifier</a>
+    
+    <!-- Formulaire de suppression -->
+    <form action="delete_event.php" method="POST" style="display:inline;" onsubmit="return confirm('Supprimer cet événement ?');">
+        <input type="hidden" name="event_id" value="<?= $row['id'] ?>">
+        <button type="submit" class="btn btn-sm btn-outline-danger">Supprimer</button>
+    </form>
+    <a href="#" class="btn btn-sm btn-info" 
+   data-bs-toggle="modal" 
+   data-bs-target="#eventDetailModal" 
+   data-id="<?= $row['id'] ?>"
+   data-titre="<?= htmlspecialchars($row['titre']) ?>"
+   data-description="<?= htmlspecialchars($row['description']) ?>"
+   data-date="<?= $row['date_debut'] ?>"
+    data-datefin="<?= $row['date_fin'] ?>"
+   data-image="<?= $row['image'] ?>">
+   Détails
+</a>
+
+</td>
                     </tr>
                   <?php endforeach; ?>
                 </tbody>
@@ -101,207 +137,171 @@ $events = $result->fetchAll(PDO::FETCH_ASSOC);
     </div>
   </main>
 
-  <!-- Modal pour voir les détails -->
-  <div class="modal fade" id="eventDetailsModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-lg">
-      <div class="modal-content">
-        <div class="modal-header bg-primary text-white">
-          <h5 class="modal-title">Détails de l'événement</h5>
-          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
-        </div>
-        <div class="modal-body" id="eventDetailsContent">
-          <!-- Contenu chargé dynamiquement -->
-        </div>
-        <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Bouton flottant pour ajouter un événement -->
-  <div class="fixed-plugin">
-    <button class="btn btn-primary btn-round position-fixed bottom-0 end-0 m-4" data-bs-toggle="modal" data-bs-target="#addEventModal">
-      <i class="material-symbols-rounded">add</i> Ajouter un Événement
+   <!-- Bouton flottant pour ajouter un utilisateur -->
+   <div class="fixed-plugin">
+    <button class="btn btn-primary btn-round position-fixed bottom-0 end-0 m-4" data-bs-toggle="modal" data-bs-target="#addUserModal">
+        <i class="material-symbols-rounded">add</i> Ajouter un Utilisateur
     </button>
   </div>
 
-  <!-- Modal pour ajouter un événement -->
-  <div class="modal fade" id="addEventModal" tabindex="-1" aria-labelledby="addEventModalLabel" aria-hidden="true">
+  <!-- Modal pour ajouter un utilisateur -->
+  <div class="modal fade" id="addUserModal" tabindex="-1" aria-labelledby="addUserModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
-      <div class="modal-content">
-        <div class="modal-header bg-gradient-dark">
-          <h5 class="modal-title text-white" id="addEventModalLabel">Ajouter un événement</h5>
-          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+        <div class="modal-content">
+            <div class="modal-header bg-gradient-dark">
+                <h5 class="modal-title text-white" id="addUserModalLabel">Ajouter un evenement</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form action="actions/add/add_event.php" method="POST">
+                    <div class="mb-3">
+                        <label for="nom" class="form-label">Titre</label>
+                        <input type="text" class="form-control" id="nom" name="titre" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="email" class="form-label">Description</label>
+                        <input type="text" class="form-control" id="description" name="description" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="email" class="form-label">Date debut</label>
+                        <input type="text" class="form-control" id="debut" name="date_debut" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="email" class="form-label">Date de fin</label>
+                        <input type="text" class="form-control" id="fin" name="date_fin" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="email" class="form-label">Lieu</label>
+                        <input type="text" class="form-control" id="lieu" name="lieu" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="email" class="form-label">Image</label>
+                        <input type="file" class="form-control" id="email" name="image" required>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="email" class="form-label">Organisateur</label>
+                        <select class="form-select" id="organisateur" name="organisateur" required>
+                            <option value="">Sélectionner un organisateur</option>
+                            <?php
+                            $organisateurs = $pdo->query("SELECT id, nom FROM users")->fetchAll();
+                            foreach ($organisateurs as $org) {
+                                echo "<option value='{$org['id']}'>{$org['nom']}</option>";
+                            }
+                            ?>
+                        </select>
+                    </div>
+
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
+                        <button type="submit" name="submit" class="btn btn-primary">Ajouter</button>
+                    </div>
+                </form>
+            </div>
         </div>
-        <div class="modal-body">
-          <form action="actions/add/add_event.php" method="POST" enctype="multipart/form-data">
-            <div class="mb-3">
-              <label for="titre" class="form-label">Titre</label>
-              <input type="text" class="form-control" id="titre" name="titre" required>
-            </div>
-            <div class="mb-3">
-              <label for="description" class="form-label">Description</label>
-              <textarea class="form-control" id="description" name="description" required></textarea>
-            </div>
-            <div class="mb-3">
-              <label for="date_debut" class="form-label">Date début</label>
-              <input type="datetime-local" class="form-control" id="date_debut" name="date_debut" required>
-            </div>
-            <div class="mb-3">
-              <label for="date_fin" class="form-label">Date de fin</label>
-              <input type="datetime-local" class="form-control" id="date_fin" name="date_fin" required>
-            </div>
-            <div class="mb-3">
-              <label for="lieu" class="form-label">Lieu</label>
-              <input type="text" class="form-control" id="lieu" name="lieu" required>
-            </div>
-            <div class="mb-3">
-              <label for="image" class="form-label">Image</label>
-              <input type="file" class="form-control" id="image" name="image" accept="image/*">
-            </div>
-            <div class="mb-3">
-              <label for="organisateur" class="form-label">Organisateur</label>
-              <select class="form-select" id="organisateur" name="organisateur" required>
-                <option value="">Sélectionner un organisateur</option>
-                <?php
-                $organisateurs = $pdo->query("SELECT id, nom FROM users")->fetchAll();
-                foreach ($organisateurs as $org) {
-                  echo "<option value='{$org['id']}'>{$org['nom']}</option>";
-                }
-                ?>
-              </select>
-            </div>
-            <div class="modal-footer">
-              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
-              <button type="submit" name="submit" class="btn btn-primary">Ajouter</button>
-            </div>
-          </form>
-        </div>
+    </div>
+  </div>
+<!-- Modal Détails Événement -->
+<div class="modal fade" id="eventDetailModal" tabindex="-1" aria-labelledby="eventDetailModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header bg-primary text-white">
+        <h5 class="modal-title" id="eventDetailModalLabel">Détails de l'Événement</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Fermer"></button>
+      </div>
+      <div class="modal-body">
+        <h4 id="modalEventTitle"></h4>
+        <p><strong>Date  et heure de debut:</strong> <span id="modalEventDate"></span></p>
+        <p><strong>Date  et heure de fin:</strong> <span id="modalEventDateFin"></span></p>
+        <p id="modalEventDescription"></p>
+        <img id="modalEventImage" src="" alt="Image événement" class="img-fluid mt-3 rounded" style="max-height: 300px;">
       </div>
     </div>
   </div>
+</div>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+  var eventDetailModal = document.getElementById('eventDetailModal');
+
+  eventDetailModal.addEventListener('show.bs.modal', function (event) {
+    var button = event.relatedTarget;
+
+    // Récupérer les data-attributes
+    var titre = button.getAttribute('data-titre');
+    var description = button.getAttribute('data-description');
+    var date = button.getAttribute('data-date');
+    var dateFin = button.getAttribute('data-datefin');
+
+    var image = button.getAttribute('data-image');
+
+    // Injecter dans le modal
+    document.getElementById('modalEventTitle').textContent = titre;
+    document.getElementById('modalEventDescription').textContent = description;
+    document.getElementById('modalEventDate').textContent = date;
+    document.getElementById('modalEventDateFin').textContent = dateFin;
+
+    // Charger l’image s’il y en a une
+    const imageElement = document.getElementById('modalEventImage');
+    if (image) {
+      imageElement.src = '../../../uploads/' + image;
+      imageElement.style.display = 'block';
+    } else {
+      imageElement.style.display = 'none';
+    }
+  });
+});
+</script>
 
   <!-- Core JS Files -->
   <script src="../assets/js/core/popper.min.js"></script>
   <script src="../assets/js/core/bootstrap.min.js"></script>
   <script src="../assets/js/plugins/perfect-scrollbar.min.js"></script>
   <script src="../assets/js/plugins/smooth-scrollbar.min.js"></script>
+  <script>
+    var win = navigator.platform.indexOf('Win') > -1;
+    if (win && document.querySelector('#sidenav-scrollbar')) {
+      var options = { damping: '0.5' }
+      Scrollbar.init(document.querySelector('#sidenav-scrollbar'), options);
+    }
+  </script>
   <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 
-  <script>
-    // Gestion des événements
-    $(document).ready(function() {
-      // Affichage des détails de l'événement
-      $('.view-btn').click(function() {
-        const eventId = $(this).data('event-id');
-        const modal = new bootstrap.Modal(document.getElementById('eventDetailsModal'));
-        
-        // Afficher un loader pendant le chargement
-        $('#eventDetailsContent').html(`
-          <div class="text-center py-5">
-            <div class="spinner-border text-primary" role="status">
-              <span class="visually-hidden">Chargement...</span>
-            </div>
-          </div>
-        `);
-        
-        modal.show();
-        
-        // Charger les détails via AJAX
-        $.ajax({
-          url: 'actions/event.php',
-          type: 'GET',
-          data: { id: eventId },
-          success: function(response) {
-            if (response.success) {
-              const event = response.data;
-              const startDate = new Date(event.date_debut).toLocaleString();
-              const endDate = new Date(event.date_fin).toLocaleString();
-              
-              $('#eventDetailsContent').html(`
-                <div class="row">
-                  <div class="col-md-6">
-                    <img src="../../uploads/${event.image || 'default.jpg'}" 
-                         class="img-fluid rounded mb-3" 
-                         style="max-height: 300px; object-fit: cover;"
-                         alt="${event.titre}">
-                    <div class="d-flex justify-content-center gap-2">
-                      <span class="badge bg-primary">${event.categorie || 'Général'}</span>
-                      <span class="badge bg-success">${event.statut || 'Actif'}</span>
-                    </div>
-                  </div>
-                  <div class="col-md-6">
-                    <h3 class="mb-3">${event.titre}</h3>
-                    <div class="mb-3">
-                      <h5><i class="far fa-calendar-alt me-2"></i>Dates</h5>
-                      <p><strong>Début:</strong> ${startDate}</p>
-                      <p><strong>Fin:</strong> ${endDate}</p>
-                    </div>
-                    <div class="mb-3">
-                      <h5><i class="fas fa-map-marker-alt me-2"></i>Lieu</h5>
-                      <p>${event.lieu || 'Non spécifié'}</p>
-                    </div>
-                    <div class="mb-3">
-                      <h5><i class="fas fa-user-tie me-2"></i>Organisateur</h5>
-                      <p>${event.organisateur || 'Non spécifié'}</p>
-                    </div>
-                    <div class="mb-3">
-                      <h5><i class="fas fa-info-circle me-2"></i>Description</h5>
-                      <p>${event.description || 'Aucune description disponible'}</p>
-                    </div>
-                  </div>
-                </div>
-              `);
-            } else {
-              $('#eventDetailsContent').html(`
-                <div class="alert alert-danger">
-                  ${response.error || 'Erreur lors du chargement des détails'}
-                </div>
-              `);
-            }
-          },
-          error: function() {
-            $('#eventDetailsContent').html(`
-              <div class="alert alert-danger">
-                Erreur lors de la communication avec le serveur
-              </div>
-            `);
-          }
-        });
-      });
+  <!-- Script pour charger les données -->
 
-      // Suppression d'un événement
-      $('.delete-btn').click(function() {
-        const eventId = $(this).data('event-id');
-        
-        if (confirm('Êtes-vous sûr de vouloir supprimer cet événement ?')) {
-          $.ajax({
-            url: 'actions/delete/delete_event.php',
-            type: 'POST',
-            data: { id: eventId },
-            success: function(response) {
-              if (response.success) {
-                alert('Événement supprimé avec succès');
-                location.reload();
-              } else {
-                alert(response.error || 'Erreur lors de la suppression');
-              }
-            },
-            error: function() {
-              alert('Erreur lors de la communication avec le serveur');
+<script>
+    $(document).ready(function() {
+        // Lorsque le bouton de suppression est cliqué
+        $(".delete-btn").click(function() {
+            var eventId = $(this).data("event-id"); // Récupérer l'ID de l'événement
+
+            // Demander confirmation avant de supprimer
+            if (confirm("Êtes-vous sûr de vouloir supprimer cet événement ?")) {
+                // Envoyer une requête AJAX pour supprimer l'événement
+                $.ajax({
+                    url: "delete_event.php", // URL de la page PHP de suppression
+                    type: "POST",
+                    data: { event_id: eventId }, // Envoi de l'ID de l'événement à supprimer
+                    success: function(response) {
+                        // Si la suppression est réussie, supprimer la ligne de l'événement
+                        alert("Événement supprimé avec succès");
+                        location.reload(); // Recharger la page pour voir les changements
+                    },
+                    error: function(xhr, status, error) {
+                        alert("Une erreur est survenue lors de la suppression. Veuillez réessayer.");
+                    }
+                });
             }
-          });
-        }
-      });
+        });
     });
-  </script>
+</script>
 
   <!-- Github buttons -->
   <script async defer src="https://buttons.github.io/buttons.js"></script>
   <!-- Control Center for Material Dashboard -->
   <script src="../assets/js/material-dashboard.min.js?v=3.2.0"></script>
-  <!-- Bootstrap Bundle JS -->
+  <!-- Bootstrap Bundle JS (une seule inclusion) -->
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  
 </body>
+
 </html>

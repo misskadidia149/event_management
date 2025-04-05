@@ -1,6 +1,15 @@
- <!-- Page d'accueil -->
+<?php
+// Inclure la connexion à la base de données
+require_once "../config/db.php";
+session_start();
+// Récupération des événements
+$query = "SELECT * FROM events ORDER BY date_debut ASC";  
+$stmt = $pdo->prepare($query);
+$stmt->execute();
+$events = $stmt->fetchAll();
+?>
 
- <!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
@@ -51,28 +60,19 @@
 <div class="container mt-5">
     <h2 class="text-center mb-4">📅 Événements à venir</h2>
     <div class="row">
-        <!-- Exemple d'événement -->
-        <div class="col-md-4">
-            <div class="card event-card p-3">
-                <h5 class="card-title">Conférence Tech</h5>
-                <p class="text-muted">📍 Paris | 📅 15/02/2025</p>
-                <a href="inscription.php?id=1" class="btn btn-custom">S'inscrire</a>
+        <!-- Affichage des événements dynamiquement -->
+        <?php foreach ($events as $event): ?>
+            <div class="col-md-4">
+                <div class="card event-card p-3">
+                    <h5 class="card-title"><?= htmlspecialchars($event['titre']); ?></h5>
+                    <p class="text-muted">📍 <?= htmlspecialchars($event['lieu']); ?></p>
+                    <p>
+                        📅 <?= date('d/m/Y', strtotime($event['date_debut'])); ?>
+                    </p>
+                    <a href="inscription.php?id=<?= $event['id']; ?>" class="btn btn-custom">S'inscrire</a>
+                </div>
             </div>
-        </div>
-        <div class="col-md-4">
-            <div class="card event-card p-3">
-                <h5 class="card-title">Atelier IA</h5>
-                <p class="text-muted">📍 Lyon | 📅 22/02/2025</p>
-                <a href="inscription.php?id=2" class="btn btn-custom">S'inscrire</a>
-            </div>
-        </div>
-        <div class="col-md-4">
-            <div class="card event-card p-3">
-                <h5 class="card-title">Hackathon</h5>
-                <p class="text-muted">📍 Marseille | 📅 10/03/2025</p>
-                <a href="inscription.php?id=3" class="btn btn-custom">S'inscrire</a>
-            </div>
-        </div>
+        <?php endforeach; ?>
     </div>
 </div>
 

@@ -1,4 +1,3 @@
-<!-- Page de connexion -->
 <?php
 require_once "../config/db.php";
 session_start();
@@ -15,19 +14,20 @@ if (isset($_POST['login'])) {
         $user = $verifyUser->fetch();
 
         if ($user && password_verify($password, $user['mot_de_passe'])) {
-            $_SESSION['user_id'] = $user['id']; // Stocke l'ID de l'utilisateur en session
-            $_SESSION['email'] = $user['email'];
-            $_SESSION['role'] = $user['role'];
+            // Stocker les informations de l'utilisateur en session avant la redirection
+            $_SESSION['user_id'] = $user['id']; // ID de l'utilisateur
+            $_SESSION['user_name'] = $user['nom']; // Nom de l'utilisateur
+            $_SESSION['user_email'] = $user['email']; // Email de l'utilisateur
+            $_SESSION['role'] = $user['role']; // Rôle de l'utilisateur (admin, etc.)
 
+            // Rediriger selon le rôle de l'utilisateur
             if ($user['role'] === 'admin') {
                 header("Location: admin_dashboard.php");
-                exit(); // Vérifier si ce message s'affiche avant la redirection
+                exit();
             } else {
                 header("Location: user_dashboard.php");
-                exit(); // Vérifier si ce message s'affiche avant la redirection
+                exit();
             }
-            exit();
-            
         } else {
             $message = "<div class='alert alert-danger text-center'>Mauvais identifiants !</div>";
         }

@@ -1,32 +1,42 @@
 <?php
 session_start();
 require_once "../config/db.php";
-$sql = "SELECT * FROM register ORDER BY debut DESC";
-$result = $pdo->query("SELECT * FROM register");
-$events = $result->fetchAll(PDO::FETCH_ASSOC);
+
+// Requête pour récupérer tous les événements, triés par date de début (avec alias)
+$sql_events = "SELECT * FROM events ORDER BY date_debut DESC";
+$result_events = $pdo->query($sql_events);
+$events = $result_events->fetchAll(PDO::FETCH_ASSOC);
+
 // Requête pour compter le nombre d'utilisateurs
-$sql = "SELECT COUNT(*) AS total FROM users";
-$stmt = $pdo->prepare($sql);
+$sql_users_count = "SELECT COUNT(*) AS total FROM users";
+$stmt = $pdo->prepare($sql_users_count);
 $stmt->execute();
 $total_users = $stmt->fetch(PDO::FETCH_ASSOC)['total'];
-// Requête pour compter le nombre d'evenements
-$sql = "SELECT COUNT(*) AS total FROM events";
-$stmt = $pdo->prepare($sql);
+
+// Requête pour compter le nombre d'événements
+$sql_events_count = "SELECT COUNT(*) AS total FROM events";
+$stmt = $pdo->prepare($sql_events_count);
 $stmt->execute();
 $total_events = $stmt->fetch(PDO::FETCH_ASSOC)['total'];
+
+// Récupération des inscriptions avec jointure sur la table des utilisateurs pour obtenir le nom
+$query_inscriptions = "
+    SELECT i.id, u.nom, i.evenement_id, i.statut, i.date_inscription
+    FROM register i
+    INNER JOIN users u ON i.utilisateur_id = u.id
+    ORDER BY i.date_inscription DESC
+";
+$stmt = $pdo->prepare($query_inscriptions);
+$stmt->execute();
+$inscriptions = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
 // Requête pour compter le nombre d'inscriptions
-$sql = "SELECT COUNT(*) AS total FROM register";
-$stmt = $pdo->prepare($sql);
+$sql_register_count = "SELECT COUNT(*) AS total FROM register";
+$stmt = $pdo->prepare($sql_register_count);
 $stmt->execute();
 $total_registers = $stmt->fetch(PDO::FETCH_ASSOC)['total'];
-
-
-
-
-
-
-
 ?>
+
 <!DOCTYPE html>
 <html lang="en">
 
@@ -66,8 +76,8 @@ $total_registers = $stmt->fetch(PDO::FETCH_ASSOC)['total'];
                   <p class="text-sm mb-0 text-capitalize">Nombre d'Evenements</p>
                   <h4 class="mb-0"><?php echo $total_events; ?></h4>
                 </div>
-                <div class="icon icon-md icon-shape bg-gradient-dark shadow-dark shadow text-center border-radius-lg">
-                  <i class="material-symbols-rounded opacity-10">weekend</i>
+                <div class="icon icon-md icon-shape shadow-dark shadow text-center border-radius-lg" style="background-color: #BB2649;">            
+                <i class="material-symbols-rounded opacity-10">weekend</i>
                 </div>
               </div>
             </div>
@@ -84,8 +94,7 @@ $total_registers = $stmt->fetch(PDO::FETCH_ASSOC)['total'];
                   <p class="text-sm mb-0 text-capitalize">Nombre d'utilisateurs</p>
                   <h4 class="mb-0"><?php echo $total_users; ?></h4>
                 </div>
-                <div class="icon icon-md icon-shape bg-gradient-dark shadow-dark shadow text-center border-radius-lg">
-                  <i class="material-symbols-rounded opacity-10">person</i>
+<div class="icon icon-md icon-shape shadow-dark shadow text-center border-radius-lg" style="background-color: #FFC000;">                  <i class="material-symbols-rounded opacity-10">person</i>
                 </div>
               </div>
             </div>
@@ -102,7 +111,7 @@ $total_registers = $stmt->fetch(PDO::FETCH_ASSOC)['total'];
                   <p class="text-sm mb-0 text-capitalize">Personnes inscrite</p>
                   <h4 class="mb-0">3,<?php echo $total_registers; ?></h4>
                 </div>
-                <div class="icon icon-md icon-shape bg-gradient-dark shadow-dark shadow text-center border-radius-lg">
+                <div class="icon icon-md icon-shape shadow-dark shadow text-center border-radius-lg" style="background-color: #0F4C81;">            
                   <i class="material-symbols-rounded opacity-10">leaderboard</i>
                 </div>
               </div>
@@ -115,46 +124,45 @@ $total_registers = $stmt->fetch(PDO::FETCH_ASSOC)['total'];
       </div>
 
       <div class="row mb-4">
-        <div class="col-lg-8 col-md-6 mb-md-0 mb-4">
-          <div class="card">
+    <div class="col-lg-8 col-md-6 mb-md-0 mb-4">
+        <div class="card">
             <div class="card-header pb-0">
-              <div class="row">
-                <div class="col-lg-6 col-7">
-                  <h6>Liste des inscription aux événements</h6>
+                <div class="row">
+                    <div class="col-lg-6 col-7">
+                        <h6>Liste des inscriptions aux événements</h6>
+                    </div>
                 </div>
             </div>
             <div class="card-body px-0 pb-2">
-              <div class="table-responsive">
-                <table class="table align-items-center mb-0">
-                  <thead>
-                    <tr>
-                      <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">ID </th>
-                      <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">ID Utilisateur</th>
-                      <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">ID Evénement</th>
-                      <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Statut</th>
-                      <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Date d'inscription</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-              <?php foreach ($events as $row) {
-                  echo "<tr>
-      <td>" . htmlspecialchars($row['id']) . "</td>
-      <td>" . htmlspecialchars($row['utilisateur_id']) . "</td>
-      <td>" . htmlspecialchars($row['evenement_id']) . "</td>
-      <td>" . htmlspecialchars($row['statut']) . "</td>
-      <td>" . htmlspecialchars($row['date_inscription']) . "</td>
-  </tr>";
-
-              } ?>
-          </tbody>
-                </table>
-              </div>
+                <div class="table-responsive">
+                    <table class="table align-items-center mb-0">
+                        <thead>
+                            <tr>
+                                <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">ID</th>
+                                <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Nom Utilisateur</th>
+                                <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">ID Evénement</th>
+                                <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Statut</th>
+                                <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Date d'inscription</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <?php foreach ($inscriptions as $row) { ?>
+                                <tr>
+                                    <td><?php echo htmlspecialchars($row['id']); ?></td>
+                                    <td><?php echo htmlspecialchars($row['nom']); ?></td> <!-- Affichage du nom de l'utilisateur -->
+                                    <td><?php echo htmlspecialchars($row['evenement_id']); ?></td>
+                                    <td class="text-center"><?php echo htmlspecialchars($row['statut']); ?></td>
+                                    <td class="text-center"><?php echo htmlspecialchars($row['date_inscription']); ?></td>
+                                </tr>
+                            <?php } ?>
+                        </tbody>
+                    </table>
+                </div>
             </div>
-          </div>
         </div>
-
-      </div>
     </div>
+</div>
+
   </main>
   <div class="fixed-plugin">
     <a class="fixed-plugin-button text-dark position-fixed px-3 py-2">
